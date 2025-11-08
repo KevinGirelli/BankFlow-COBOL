@@ -38,3 +38,89 @@
                INTO WS-DATETIME-FORMATTED
            END-STRING.
 
+       METRICS-INITIALIZE.
+           ACCEPT WS-METRIC-START-DATE FROM DATE YYYYMMDD
+           ACCEPT WS-METRIC-START-TIME FROM TIME
+           MOVE ZERO TO WS-METRIC-OP-TOTAL
+           MOVE ZERO TO WS-METRIC-OP-SUCCESS.
+
+       METRICS-START-OPERATION.
+           ADD 1 TO WS-METRIC-OP-TOTAL.
+
+       METRICS-RECORD-SUCCESS.
+           ADD 1 TO WS-METRIC-OP-SUCCESS.
+
+       METRICS-LOG-SUMMARY.
+           ACCEPT WS-METRIC-END-DATE FROM DATE YYYYMMDD
+           ACCEPT WS-METRIC-END-TIME FROM TIME
+           MOVE WS-METRIC-START-TIME TO WS-METRIC-TIME-WORK
+           DIVIDE WS-METRIC-TIME-WORK BY 10000
+               GIVING WS-METRIC-HOURS REMAINDER WS-METRIC-REM
+           DIVIDE WS-METRIC-REM BY 100
+               GIVING WS-METRIC-MINUTES REMAINDER WS-METRIC-SECONDS
+           COMPUTE WS-METRIC-SECONDS-START =
+               (WS-METRIC-HOURS * 3600)
+             + (WS-METRIC-MINUTES * 60)
+             + WS-METRIC-SECONDS
+           MOVE WS-METRIC-END-TIME TO WS-METRIC-TIME-WORK
+           DIVIDE WS-METRIC-TIME-WORK BY 10000
+               GIVING WS-METRIC-HOURS REMAINDER WS-METRIC-REM
+           DIVIDE WS-METRIC-REM BY 100
+               GIVING WS-METRIC-MINUTES REMAINDER WS-METRIC-SECONDS
+           COMPUTE WS-METRIC-SECONDS-END =
+               (WS-METRIC-HOURS * 3600)
+             + (WS-METRIC-MINUTES * 60)
+             + WS-METRIC-SECONDS
+           COMPUTE WS-METRIC-DATE-DIFF =
+               FUNCTION INTEGER-OF-DATE(WS-METRIC-END-DATE)
+             - FUNCTION INTEGER-OF-DATE(WS-METRIC-START-DATE)
+           COMPUTE WS-METRIC-ELAPSED =
+               (WS-METRIC-DATE-DIFF * 86400)
+             + (WS-METRIC-SECONDS-END - WS-METRIC-SECONDS-START)
+           IF WS-METRIC-ELAPSED < 0
+               MOVE ZERO TO WS-METRIC-ELAPSED
+           END-IF
+           COMPUTE WS-METRIC-FAIL =
+               WS-METRIC-OP-TOTAL - WS-METRIC-OP-SUCCESS
+           DISPLAY WS-LINE-SEPARATOR
+           DISPLAY "Session metrics:"
+           DISPLAY "  Operations attempted: " WS-METRIC-OP-TOTAL
+           DISPLAY "  Successful operations: " WS-METRIC-OP-SUCCESS
+           DISPLAY "  Failed/aborted operations: " WS-METRIC-FAIL
+           DISPLAY "  Elapsed seconds: " WS-METRIC-ELAPSED
+           IF WS-LOG-OPEN-FLAG = "Y"
+               PERFORM LOG-CLEAR
+               MOVE "METRIC" TO WS-LOG-TYPE
+               MOVE "SUMMARY" TO WS-LOG-STATUS-TEXT
+               MOVE 1 TO WS-LOG-POINTER
+               MOVE WS-METRIC-OP-TOTAL TO WS-NUMERIC-DISPLAY
+               STRING "total="
+                      FUNCTION TRIM(WS-NUMERIC-DISPLAY TRAILING)
+                      DELIMITED BY SIZE
+                      INTO WS-LOG-MESSAGE
+                      WITH POINTER WS-LOG-POINTER
+               END-STRING
+               MOVE WS-METRIC-OP-SUCCESS TO WS-NUMERIC-DISPLAY
+               STRING " success="
+                      FUNCTION TRIM(WS-NUMERIC-DISPLAY TRAILING)
+                      DELIMITED BY SIZE
+                      INTO WS-LOG-MESSAGE
+                      WITH POINTER WS-LOG-POINTER
+               END-STRING
+               MOVE WS-METRIC-FAIL TO WS-NUMERIC-DISPLAY
+               STRING " failure="
+                      FUNCTION TRIM(WS-NUMERIC-DISPLAY TRAILING)
+                      DELIMITED BY SIZE
+                      INTO WS-LOG-MESSAGE
+                      WITH POINTER WS-LOG-POINTER
+               END-STRING
+               MOVE WS-METRIC-ELAPSED TO WS-NUMERIC-DISPLAY
+               STRING " elapsed_s="
+                      FUNCTION TRIM(WS-NUMERIC-DISPLAY TRAILING)
+                      DELIMITED BY SIZE
+                      INTO WS-LOG-MESSAGE
+                      WITH POINTER WS-LOG-POINTER
+               END-STRING
+               PERFORM LOG-WRITE
+           END-IF.
+

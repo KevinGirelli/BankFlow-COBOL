@@ -19,7 +19,7 @@ BankFlow COBOL demonstrates how a sequential-file banking workload can be organi
   - `initialization-section.cpy` – environment discovery and file provisioning.
   - `menu-section.cpy` – interactive loop and option routing.
   - `client-section.cpy` – customer registration and validation.
-  - `account-section.cpy` – account lifecycle, deposits, withdrawals, balance checks.
+  - `account-section.cpy` – account lifecycle, deposits, withdrawals, transfers, balance checks.
   - `report-section.cpy` – activity report generation and summarisation.
   - `utility-section.cpy` – shared helpers (timestamp builder, transaction writer).
   - `finalize-section.cpy` – graceful shutdown and log closure.
@@ -59,6 +59,7 @@ BankFlow.cbl
 - `scripts/migrate_to_sqlite.py` / `migrate_from_sqlite.py` support round-tripping data between sequential files and SQLite.
 - The `migrations/` directory stores generated databases while avoiding binary noise in version control.
 - Structured logging and verbose mode aid troubleshooting in both interactive runs and automated tests.
+- Utility metrics capture session duration and operation outcomes, logging a summary before shutdown.
 
 ### Conventions
 
@@ -94,7 +95,7 @@ BankFlow COBOL demonstra como organizar um domínio bancário baseado em arquivo
   - `initialization-section.cpy` – descoberta de ambiente e preparação de arquivos.
   - `menu-section.cpy` – laço interativo e roteamento de opções.
   - `client-section.cpy` – cadastro e validação de clientes.
-  - `account-section.cpy` – ciclo de vida da conta, depósitos, saques e saldos.
+  - `account-section.cpy` – ciclo de vida da conta, depósitos, saques, transferências e saldos.
   - `report-section.cpy` – geração de relatórios e sumarização.
   - `utility-section.cpy` – utilitários compartilhados (construtor de timestamp, gravação de transações).
   - `finalize-section.cpy` – encerramento elegante e fechamento de logs.
@@ -134,6 +135,7 @@ BankFlow.cbl
 - `scripts/migrate_to_sqlite.py` e `migrate_from_sqlite.py` permitem ida e volta entre arquivos sequenciais e SQLite.
 - O diretório `migrations/` armazena bancos gerados, evitando ruído binário no controle de versão.
 - Logs estruturados e modo verboso auxiliam na depuração em execuções interativas e testes automatizados.
+- Métricas utilitárias capturam a duração da sessão e o resultado das operações, registrando um resumo antes do encerramento.
 
 ### Convenções
 

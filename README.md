@@ -26,10 +26,12 @@ All paths default to these folders but can be overridden with environment variab
 - Customer registration with CPF validation and duplicate detection.
 - Account creation linked to existing customers with sequential numbering.
 - Deposits and withdrawals with robust validation and transaction logging.
+- Internal transfers between accounts with double-entry transaction records.
 - Balance inquiry with readable formatting.
 - Activity report written to `reports/report.txt`, including aggregated customer balance.
 - Structured event logging (`logs/events.log`) with optional verbose mode.
 - In-memory caches for customers and accounts to accelerate lookups.
+- Session metrics summary (operation counts and elapsed time) emitted at shutdown.
 
 ### Usage
 
@@ -117,10 +119,12 @@ Todos os caminhos usam esses diretórios por padrão, mas podem ser sobrescritos
 - Cadastro de clientes com validação de CPF e detecção de duplicidades.
 - Criação de contas vinculadas a clientes existentes com numeração sequencial.
 - Depósitos e saques com validações robustas e registro de transações.
+- Transferências internas entre contas com registros de transação em dupla entrada.
 - Consulta de saldo com formatação legível.
 - Relatório de movimentações gravado em `reports/report.txt`, incluindo o saldo agregado do cliente.
 - Logs estruturados (`logs/events.log`) com modo verboso opcional.
 - Caches em memória de clientes e contas para acelerar buscas.
+- Resumo de métricas da sessão (contagem de operações e tempo decorrido) exibido no encerramento.
 
 ### Uso
 

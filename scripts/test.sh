@@ -37,7 +37,7 @@ run_case() {
 }
 
 # Base scenario (customer, account, deposit, withdrawal, report)
-BASE_INPUT=$'1\nJohn Smith\n12345678901\n123 Main Street\n\n2\n1\n\n3\n1\n250.00\n\n4\n1\n50.00\n\n5\n1\n\n6\n1\n\n7\n'
+BASE_INPUT=$'1\nJohn Smith\n12345678901\n123 Main Street\n\n2\n1\n\n3\n1\n250.00\n\n4\n1\n50.00\n\n5\n1\n\n7\n1\n\n8\n'
 BASE_LOG="$(run_case "base" "${BASE_INPUT}")"
 grep -q "Customer registered successfully" "${BASE_LOG}"
 grep -q "Account created successfully" "${BASE_LOG}"
@@ -48,17 +48,17 @@ grep -q "Report generated successfully" "${BASE_LOG}"
 grep -q "Account: 00000001" "${REPORT_DIR}/report.txt"
 
 # Deposit into non-existing account
-INVALID_DEPOSIT_INPUT=$'3\n99999999\n10.00\n\n7\n'
+INVALID_DEPOSIT_INPUT=$'3\n99999999\n10.00\n\n8\n'
 INVALID_DEPOSIT_LOG="$(run_case "deposit-invalid" "${INVALID_DEPOSIT_INPUT}")"
 grep -q "Account not found" "${INVALID_DEPOSIT_LOG}"
 
 # Withdrawal with insufficient funds
-INSUFFICIENT_INPUT=$'4\n1\n9999.00\n\n7\n'
+INSUFFICIENT_INPUT=$'4\n1\n9999.00\n\n8\n'
 INSUFFICIENT_LOG="$(run_case "withdraw-insufficient" "${INSUFFICIENT_INPUT}")"
 grep -q "Insufficient funds" "${INSUFFICIENT_LOG}"
 
 # Second customer/account and report verification
-MULTI_INPUT=$'1\nMary Johnson\n10987654321\n456 Second Avenue\n\n2\n2\n\n3\n2\n300.00\n\n6\n2\n\n7\n'
+MULTI_INPUT=$'1\nMary Johnson\n10987654321\n456 Second Avenue\n\n2\n2\n\n3\n2\n300.00\n\n7\n2\n\n8\n'
 MULTI_LOG="$(run_case "multi-client" "${MULTI_INPUT}")"
 grep -q "Customer registered successfully" "${MULTI_LOG}"
 grep -q "Account created successfully! Number: 00000002" "${MULTI_LOG}"
@@ -66,6 +66,12 @@ grep -q "Deposit completed successfully" "${MULTI_LOG}"
 grep -q "Report generated successfully" "${MULTI_LOG}"
 grep -q "Account: 00000002" "${REPORT_DIR}/report.txt"
 grep -q "Total customer balance" "${REPORT_DIR}/report.txt"
+
+# Transfer between accounts
+TRANSFER_INPUT=$'6\n1\n2\n75.00\n\n5\n1\n\n5\n2\n\n8\n'
+TRANSFER_LOG="$(run_case "transfer" "${TRANSFER_INPUT}")"
+grep -q "Transfer completed successfully" "${TRANSFER_LOG}"
+grep -q "Current balance" "${TRANSFER_LOG}"
 
 # Preserve final results in project directories
 mkdir -p "${ROOT_DIR}/data" "${ROOT_DIR}/reports"
@@ -80,7 +86,8 @@ fi
 cat "${BASE_LOG}" \
     "${INVALID_DEPOSIT_LOG}" \
     "${INSUFFICIENT_LOG}" \
-    "${MULTI_LOG}" > "${ROOT_DIR}/reports/test-output.log"
+    "${MULTI_LOG}" \
+    "${TRANSFER_LOG}" > "${ROOT_DIR}/reports/test-output.log"
 
 echo "Functional tests OK"
 

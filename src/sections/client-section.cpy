@@ -53,6 +53,7 @@
                       WITH POINTER WS-LOG-POINTER
                END-STRING
                PERFORM LOG-WRITE
+               PERFORM METRICS-RECORD-SUCCESS
            END-IF
            CLOSE CLIENT-FILE
            MOVE "00" TO WS-CLIENT-STATUS.

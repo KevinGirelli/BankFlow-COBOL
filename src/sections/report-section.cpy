@@ -133,6 +133,7 @@
                       WITH POINTER WS-LOG-POINTER
                END-STRING
                PERFORM LOG-WRITE
+               PERFORM METRICS-RECORD-SUCCESS
            END-IF.
        *> END MOVEMENT REPORT
 

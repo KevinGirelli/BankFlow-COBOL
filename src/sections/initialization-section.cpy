@@ -16,6 +16,7 @@
                END-STRING
                PERFORM LOG-WRITE
            END-IF
+           PERFORM METRICS-INITIALIZE
            PERFORM INDEX-INITIALIZE.
 
        RESOLVE-DIRECTORIES.

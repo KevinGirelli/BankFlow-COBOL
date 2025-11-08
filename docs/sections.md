@@ -32,6 +32,7 @@ This document summarises each COBOL section included through `src/sections/main-
 - Creates accounts linked to existing customers and assigns sequential numbers.
 - Handles deposits, withdrawals, and balance inquiries with shared input helpers.
 - Synchronises account balances with the index and transaction log.
+- Executes internal transfers with validation, dual balance updates, and mirrored transaction records.
 - Communicates errors clearly (missing account, insufficient funds, file access).
 
 ### Report Section (`report-section.cpy`)
@@ -44,6 +45,7 @@ This document summarises each COBOL section included through `src/sections/main-
 
 - Formats timestamps (`BUILD-DATETIME`) and records transactions (`RECORD-TRANSACTION`).
 - Centralises routines reused by multiple sections, avoiding duplication.
+- Provides metrics helpers (`METRICS-INITIALIZE`, `METRICS-START-OPERATION`, `METRICS-RECORD-SUCCESS`, `METRICS-LOG-SUMMARY`) for runtime observability.
 
 ### Logging Section (`logging-section.cpy`)
 
@@ -95,6 +97,7 @@ Este documento resume cada seção COBOL incluída via `src/sections/main-sectio
 - Cria contas vinculadas a clientes existentes e atribui numeração sequencial.
 - Trata depósitos, saques e consultas de saldo com utilitários de entrada compartilhados.
 - Sincroniza saldos das contas com o índice e registra transações.
+- Realiza transferências internas com validação, atualização dupla de saldos e registros de transações espelhados.
 - Comunica erros de forma clara (conta inexistente, saldo insuficiente, acesso a arquivo).
 
 ### Seção de Relatórios (`report-section.cpy`)
@@ -107,6 +110,7 @@ Este documento resume cada seção COBOL incluída via `src/sections/main-sectio
 
 - Formata timestamps (`BUILD-DATETIME`) e registra transações (`RECORD-TRANSACTION`).
 - Centraliza rotinas reutilizadas por várias seções, evitando duplicação.
+- Oferece auxiliares de métricas (`METRICS-INITIALIZE`, `METRICS-START-OPERATION`, `METRICS-RECORD-SUCCESS`, `METRICS-LOG-SUMMARY`) para observabilidade em tempo de execução.
 
 ### Seção de Logs (`logging-section.cpy`)
 

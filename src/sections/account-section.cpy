@@ -79,6 +79,7 @@
                       WITH POINTER WS-LOG-POINTER
                END-STRING
                PERFORM LOG-WRITE
+               PERFORM METRICS-RECORD-SUCCESS
            END-IF
            CLOSE ACCOUNT-FILE
            MOVE "00" TO WS-ACCOUNT-STATUS.
@@ -136,6 +137,7 @@
                       WITH POINTER WS-LOG-POINTER
                END-STRING
                PERFORM LOG-WRITE
+               PERFORM METRICS-RECORD-SUCCESS
            ELSE
                DISPLAY "Account not found."
                PERFORM LOG-CLEAR
@@ -266,6 +268,7 @@
                       WITH POINTER WS-LOG-POINTER
                END-STRING
                PERFORM LOG-WRITE
+               PERFORM METRICS-RECORD-SUCCESS
            ELSE
                DISPLAY "Account not found or operation error."
                PERFORM LOG-CLEAR
@@ -313,6 +316,7 @@
                        WITH POINTER WS-LOG-POINTER
                 END-STRING
                 PERFORM LOG-WRITE
+                PERFORM METRICS-RECORD-SUCCESS
                 EXIT PARAGRAPH
             END-IF
         END-IF
@@ -356,7 +360,9 @@
         CLOSE ACCOUNT-FILE
         MOVE "00" TO WS-ACCOUNT-STATUS
 
-        IF WS-OPERATION-FOUND NOT = "Y"
+        IF WS-OPERATION-FOUND = "Y"
+            PERFORM METRICS-RECORD-SUCCESS
+        ELSE
             DISPLAY "Account not found."
             PERFORM LOG-CLEAR
             MOVE "BALANCE" TO WS-LOG-TYPE
@@ -373,6 +379,283 @@
             PERFORM LOG-WRITE
         END-IF.
     *> END BALANCE INQUIRY
+
+    *> START ACCOUNT TRANSFER
+    TRANSFER-BETWEEN-ACCOUNTS.
+        DISPLAY WS-LINE-SEPARATOR
+        DISPLAY ">>> Account Transfer <<<"
+        PERFORM READ-ACCOUNT-INPUT
+        IF WS-VALID-OK NOT = "Y"
+            EXIT PARAGRAPH
+        END-IF
+        MOVE WS-INPUT-ACCOUNT TO WS-TRANSFER-SOURCE
+        PERFORM READ-DESTINATION-ACCOUNT
+        IF WS-VALID-OK NOT = "Y"
+            EXIT PARAGRAPH
+        END-IF
+        MOVE WS-INPUT-ACCOUNT TO WS-TRANSFER-TARGET
+        IF WS-TRANSFER-SOURCE = WS-TRANSFER-TARGET
+            DISPLAY "Source and destination accounts must be different."
+            PERFORM LOG-CLEAR
+            MOVE "TRANSFER" TO WS-LOG-TYPE
+            MOVE "ERROR" TO WS-LOG-STATUS-TEXT
+            MOVE WS-TRANSFER-SOURCE TO WS-NUMERIC-DISPLAY
+            MOVE 1 TO WS-LOG-POINTER
+            STRING "same account="
+                   FUNCTION TRIM(WS-NUMERIC-DISPLAY TRAILING)
+                   DELIMITED BY SIZE
+                   INTO WS-LOG-MESSAGE
+                   WITH POINTER WS-LOG-POINTER
+            END-STRING
+            PERFORM LOG-WRITE
+            EXIT PARAGRAPH
+        END-IF
+        PERFORM READ-AMOUNT-INPUT
+        IF WS-VALID-OK NOT = "Y"
+            EXIT PARAGRAPH
+        END-IF
+        PERFORM VALIDATE-TRANSFER-ACCOUNTS
+        IF WS-VALID-OK NOT = "Y"
+            EXIT PARAGRAPH
+        END-IF
+        PERFORM EXECUTE-TRANSFER.
+
+    READ-DESTINATION-ACCOUNT.
+        MOVE "N" TO WS-VALID-OK
+        DISPLAY "Destination account number: "
+        ACCEPT WS-ACCOUNT-ENTRY
+        MOVE FUNCTION TRIM(WS-ACCOUNT-ENTRY TRAILING)
+            TO WS-ACCOUNT-ENTRY
+        IF WS-ACCOUNT-ENTRY = SPACES
+            DISPLAY "Destination account number is required."
+            EXIT PARAGRAPH
+        END-IF
+        COMPUTE WS-INPUT-ACCOUNT = FUNCTION NUMVAL (WS-ACCOUNT-ENTRY)
+            ON SIZE ERROR
+                DISPLAY "Destination account number is invalid."
+                EXIT PARAGRAPH
+        END-COMPUTE
+        IF WS-INPUT-ACCOUNT <= 0
+            DISPLAY "Destination account number must be positive."
+            EXIT PARAGRAPH
+        END-IF
+        MOVE "Y" TO WS-VALID-OK.
+
+    VALIDATE-TRANSFER-ACCOUNTS.
+        MOVE "N" TO WS-VALID-OK
+        MOVE "N" TO WS-TRANSFER-SOURCE-FOUND
+        MOVE "N" TO WS-TRANSFER-TARGET-FOUND
+        MOVE ZERO TO WS-TRANSFER-SOURCE-BAL
+        MOVE ZERO TO WS-TRANSFER-TARGET-BAL
+        MOVE "00" TO WS-ACCOUNT-STATUS
+        OPEN INPUT ACCOUNT-FILE
+        IF WS-ACCOUNT-STATUS NOT = "00"
+            DISPLAY "Error opening account file. STATUS: "
+                WS-ACCOUNT-STATUS
+            PERFORM LOG-CLEAR
+            MOVE "TRANSFER" TO WS-LOG-TYPE
+            MOVE "FILE" TO WS-LOG-STATUS-TEXT
+            MOVE 1 TO WS-LOG-POINTER
+            STRING "open failure STATUS="
+                   WS-ACCOUNT-STATUS DELIMITED BY SIZE
+                   INTO WS-LOG-MESSAGE
+                   WITH POINTER WS-LOG-POINTER
+            END-STRING
+            PERFORM LOG-WRITE
+            CLOSE ACCOUNT-FILE
+            MOVE "00" TO WS-ACCOUNT-STATUS
+            EXIT PARAGRAPH
+        END-IF
+        PERFORM UNTIL WS-ACCOUNT-STATUS NOT = "00"
+            READ ACCOUNT-FILE
+                AT END
+                    MOVE "99" TO WS-ACCOUNT-STATUS
+                NOT AT END
+                    IF ACCOUNT-NUMBER = WS-TRANSFER-SOURCE
+                        MOVE "Y" TO WS-TRANSFER-SOURCE-FOUND
+                        MOVE ACCOUNT-BALANCE TO WS-TRANSFER-SOURCE-BAL
+                    END-IF
+                    IF ACCOUNT-NUMBER = WS-TRANSFER-TARGET
+                        MOVE "Y" TO WS-TRANSFER-TARGET-FOUND
+                        MOVE ACCOUNT-BALANCE TO WS-TRANSFER-TARGET-BAL
+                    END-IF
+            END-READ
+        END-PERFORM
+        CLOSE ACCOUNT-FILE
+        MOVE "00" TO WS-ACCOUNT-STATUS
+        IF WS-TRANSFER-SOURCE-FOUND NOT = "Y"
+            DISPLAY "Source account not found."
+            PERFORM LOG-CLEAR
+            MOVE "TRANSFER" TO WS-LOG-TYPE
+            MOVE "ERROR" TO WS-LOG-STATUS-TEXT
+            MOVE WS-TRANSFER-SOURCE TO WS-NUMERIC-DISPLAY
+            MOVE 1 TO WS-LOG-POINTER
+            STRING "missing source="
+                   FUNCTION TRIM(WS-NUMERIC-DISPLAY TRAILING)
+                   DELIMITED BY SIZE
+                   INTO WS-LOG-MESSAGE
+                   WITH POINTER WS-LOG-POINTER
+            END-STRING
+            PERFORM LOG-WRITE
+            EXIT PARAGRAPH
+        END-IF
+        IF WS-TRANSFER-TARGET-FOUND NOT = "Y"
+            DISPLAY "Destination account not found."
+            PERFORM LOG-CLEAR
+            MOVE "TRANSFER" TO WS-LOG-TYPE
+            MOVE "ERROR" TO WS-LOG-STATUS-TEXT
+            MOVE WS-TRANSFER-TARGET TO WS-NUMERIC-DISPLAY
+            MOVE 1 TO WS-LOG-POINTER
+            STRING "missing destination="
+                   FUNCTION TRIM(WS-NUMERIC-DISPLAY TRAILING)
+                   DELIMITED BY SIZE
+                   INTO WS-LOG-MESSAGE
+                   WITH POINTER WS-LOG-POINTER
+            END-STRING
+            PERFORM LOG-WRITE
+            EXIT PARAGRAPH
+        END-IF
+        IF WS-TRANSFER-SOURCE-BAL < WS-INPUT-AMOUNT
+            DISPLAY "Insufficient funds in source account."
+            PERFORM LOG-CLEAR
+            MOVE "TRANSFER" TO WS-LOG-TYPE
+            MOVE "BALANCE" TO WS-LOG-STATUS-TEXT
+            MOVE WS-TRANSFER-SOURCE TO WS-NUMERIC-DISPLAY
+            MOVE 1 TO WS-LOG-POINTER
+            MOVE WS-TRANSFER-SOURCE-BAL TO WS-AMOUNT-FORMAT
+            STRING "account="
+                   FUNCTION TRIM(WS-NUMERIC-DISPLAY TRAILING)
+                   DELIMITED BY SIZE
+                   " balance=" DELIMITED BY SIZE
+                   WS-AMOUNT-FORMAT DELIMITED BY SIZE
+                   INTO WS-LOG-MESSAGE
+                   WITH POINTER WS-LOG-POINTER
+            END-STRING
+            STRING " attempted=" DELIMITED BY SIZE
+                   FUNCTION TRIM(WS-AMOUNT-ENTRY TRAILING)
+                   DELIMITED BY SIZE
+                   INTO WS-LOG-MESSAGE
+                   WITH POINTER WS-LOG-POINTER
+            END-STRING
+            PERFORM LOG-WRITE
+            EXIT PARAGRAPH
+        END-IF
+        MOVE "Y" TO WS-VALID-OK.
+
+    EXECUTE-TRANSFER.
+        MOVE "N" TO WS-TRANSFER-SOURCE-UPDATED
+        MOVE "N" TO WS-TRANSFER-TARGET-UPDATED
+        MOVE "00" TO WS-ACCOUNT-STATUS
+        OPEN I-O ACCOUNT-FILE
+        IF WS-ACCOUNT-STATUS NOT = "00"
+            DISPLAY "Error opening account file. STATUS: "
+                WS-ACCOUNT-STATUS
+            PERFORM LOG-CLEAR
+            MOVE "TRANSFER" TO WS-LOG-TYPE
+            MOVE "FILE" TO WS-LOG-STATUS-TEXT
+            MOVE 1 TO WS-LOG-POINTER
+            STRING "open failure STATUS="
+                   WS-ACCOUNT-STATUS DELIMITED BY SIZE
+                   INTO WS-LOG-MESSAGE
+                   WITH POINTER WS-LOG-POINTER
+            END-STRING
+            PERFORM LOG-WRITE
+            CLOSE ACCOUNT-FILE
+            MOVE "00" TO WS-ACCOUNT-STATUS
+            EXIT PARAGRAPH
+        END-IF
+        PERFORM UNTIL WS-ACCOUNT-STATUS NOT = "00"
+                OR (WS-TRANSFER-SOURCE-UPDATED = "Y"
+                    AND WS-TRANSFER-TARGET-UPDATED = "Y")
+            READ ACCOUNT-FILE NEXT RECORD
+                AT END
+                    MOVE "99" TO WS-ACCOUNT-STATUS
+                NOT AT END
+                    IF ACCOUNT-NUMBER = WS-TRANSFER-SOURCE
+                        SUBTRACT WS-INPUT-AMOUNT FROM ACCOUNT-BALANCE
+                        REWRITE ACCOUNT-RECORD
+                        IF WS-ACCOUNT-STATUS = "00"
+                            MOVE "Y" TO WS-TRANSFER-SOURCE-UPDATED
+                            IF WS-INDEX-ENABLED = "Y"
+                                MOVE WS-TRANSFER-SOURCE TO WS-INPUT-ACCOUNT
+                                MOVE ZERO TO WS-INDEX-RESULT-POS
+                                PERFORM INDEX-SET-ACCOUNT-BALANCE
+                            END-IF
+                        ELSE
+                            DISPLAY "Failed to update source account. STATUS: "
+                                WS-ACCOUNT-STATUS
+                            MOVE "99" TO WS-ACCOUNT-STATUS
+                        END-IF
+                    ELSE
+                        IF ACCOUNT-NUMBER = WS-TRANSFER-TARGET
+                            ADD WS-INPUT-AMOUNT TO ACCOUNT-BALANCE
+                            REWRITE ACCOUNT-RECORD
+                            IF WS-ACCOUNT-STATUS = "00"
+                                MOVE "Y" TO WS-TRANSFER-TARGET-UPDATED
+                                IF WS-INDEX-ENABLED = "Y"
+                                    MOVE WS-TRANSFER-TARGET TO WS-INPUT-ACCOUNT
+                                    MOVE ZERO TO WS-INDEX-RESULT-POS
+                                    PERFORM INDEX-SET-ACCOUNT-BALANCE
+                                END-IF
+                            ELSE
+                                DISPLAY "Failed to update destination account. STATUS: "
+                                    WS-ACCOUNT-STATUS
+                                MOVE "99" TO WS-ACCOUNT-STATUS
+                            END-IF
+                        END-IF
+                    END-IF
+            END-READ
+        END-PERFORM
+        CLOSE ACCOUNT-FILE
+        MOVE "00" TO WS-ACCOUNT-STATUS
+        IF WS-TRANSFER-SOURCE-UPDATED = "Y"
+            AND WS-TRANSFER-TARGET-UPDATED = "Y"
+            DISPLAY "Transfer completed successfully."
+            PERFORM LOG-CLEAR
+            MOVE "TRANSFER" TO WS-LOG-TYPE
+            MOVE "SUCCESS" TO WS-LOG-STATUS-TEXT
+            MOVE 1 TO WS-LOG-POINTER
+            MOVE WS-TRANSFER-SOURCE TO WS-NUMERIC-DISPLAY
+            STRING "from="
+                   FUNCTION TRIM(WS-NUMERIC-DISPLAY TRAILING)
+                   DELIMITED BY SIZE
+                   INTO WS-LOG-MESSAGE
+                   WITH POINTER WS-LOG-POINTER
+            END-STRING
+            MOVE WS-TRANSFER-TARGET TO WS-NUMERIC-DISPLAY
+            STRING " to="
+                   FUNCTION TRIM(WS-NUMERIC-DISPLAY TRAILING)
+                   DELIMITED BY SIZE
+                   INTO WS-LOG-MESSAGE
+                   WITH POINTER WS-LOG-POINTER
+            END-STRING
+            STRING " amount="
+                   FUNCTION TRIM(WS-AMOUNT-ENTRY TRAILING)
+                   DELIMITED BY SIZE
+                   INTO WS-LOG-MESSAGE
+                   WITH POINTER WS-LOG-POINTER
+            END-STRING
+            PERFORM LOG-WRITE
+            MOVE WS-TRANSFER-SOURCE TO WS-INPUT-ACCOUNT
+            MOVE "4" TO WS-OPTION
+            PERFORM RECORD-TRANSACTION
+            MOVE WS-TRANSFER-TARGET TO WS-INPUT-ACCOUNT
+            MOVE "3" TO WS-OPTION
+            PERFORM RECORD-TRANSACTION
+            PERFORM METRICS-RECORD-SUCCESS
+        ELSE
+            DISPLAY "Transfer failed due to unexpected error."
+            PERFORM LOG-CLEAR
+            MOVE "TRANSFER" TO WS-LOG-TYPE
+            MOVE "ERROR" TO WS-LOG-STATUS-TEXT
+            MOVE 1 TO WS-LOG-POINTER
+            STRING "unexpected failure" DELIMITED BY SIZE
+                   INTO WS-LOG-MESSAGE
+                   WITH POINTER WS-LOG-POINTER
+            END-STRING
+            PERFORM LOG-WRITE
+        END-IF.
+    *> END ACCOUNT TRANSFER
 
     READ-ACCOUNT-INPUT.
         MOVE "N" TO WS-VALID-OK

@@ -1,5 +1,6 @@
        FINALIZE-SECTION SECTION.
        FINALIZE-ENTRY.
+           PERFORM METRICS-LOG-SUMMARY
            IF WS-LOG-OPEN-FLAG = "Y"
                PERFORM LOG-CLEAR
                MOVE "SYSTEM" TO WS-LOG-TYPE

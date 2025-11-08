@@ -29,6 +29,8 @@
   - Structured logs (`logs/events.log`) include timestamp, type, and status.
   - Verbose mode enabled via `BANKFLOW_VERBOSE`/`VERBOSE` and configurable path (`BANKFLOW_LOG_FILE`).
   - Test suite extended with negative scenarios and log/report verification.
+- Session metrics summary logs capture runtime, success counts, and failures at shutdown.
+- Internal account transfers supported with validation, dual file updates, mirrored transactions, and menu integration.
 - Migration tooling:
   - `migrate_to_sqlite.py` and `migrate_from_sqlite.py` export and restore sequential data to/from SQLite.
   - `migrations/` tracked with `.gitkeep` and ignored binaries.
@@ -65,6 +67,8 @@
   - Logs estruturados (`logs/events.log`) incluem timestamp, tipo e status.
   - Modo verboso via `BANKFLOW_VERBOSE`/`VERBOSE` e caminho configurável (`BANKFLOW_LOG_FILE`).
   - Suite de testes ampliada com cenários negativos e validação de logs/relatórios.
+- Resumo de métricas da sessão registra tempo de execução, contagem de sucessos e falhas no encerramento.
+- Transferências internas entre contas com validação, atualização em ambos os arquivos, transações espelhadas e integração ao menu.
 - Ferramentas de migração:
   - `migrate_to_sqlite.py` e `migrate_from_sqlite.py` exportam e restauram dados sequenciais em SQLite.
   - Diretório `migrations/` versionado com `.gitkeep` e binários ignorados.

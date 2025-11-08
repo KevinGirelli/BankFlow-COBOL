@@ -22,6 +22,7 @@ BankFlow COBOL centralises shared definitions in copybooks to keep divisions con
 - Holds path buffers, status codes, runtime flags, counters, and index tables.
 - Defines display helpers, numeric buffers, logging fields, and timestamp storage.
 - Centralises constants such as default directories, file names, and cache sizes.
+- Tracks session metrics (start time, operation counters, elapsed seconds) for shutdown summaries.
 
 ### Guidance
 
@@ -52,6 +53,7 @@ BankFlow COBOL centraliza definições compartilhadas em copybooks para manter a
 - Mantém buffers de caminhos, códigos de status, flags de execução, contadores e tabelas de índice.
 - Define auxiliares de exibição, buffers numéricos, campos de logging e armazenamento de timestamp.
 - Centraliza constantes como diretórios padrão, nomes de arquivos e tamanhos de cache.
+- Controla métricas da sessão (início, contadores de operações, segundos decorridos) para o resumo final.
 
 ### Orientações
 
