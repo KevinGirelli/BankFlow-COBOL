@@ -1,0 +1,30 @@
+           *> Sequential client file
+           SELECT CLIENT-FILE ASSIGN TO DYNAMIC WS-CLIENT-PATH
+               ORGANIZATION IS SEQUENTIAL
+               ACCESS MODE IS SEQUENTIAL
+               FILE STATUS IS WS-CLIENT-STATUS.
+
+           *> Sequential account file
+           SELECT ACCOUNT-FILE ASSIGN TO DYNAMIC WS-ACCOUNT-PATH
+               ORGANIZATION IS SEQUENTIAL
+               ACCESS MODE IS SEQUENTIAL
+               FILE STATUS IS WS-ACCOUNT-STATUS.
+
+           *> Sequential transaction file
+           SELECT TRANSACTION-FILE ASSIGN TO DYNAMIC WS-TRANSACTION-PATH
+               ORGANIZATION IS SEQUENTIAL
+               ACCESS MODE IS SEQUENTIAL
+               FILE STATUS IS WS-TRANSACTION-STATUS.
+
+           *> Generated report file
+           SELECT REPORT-FILE ASSIGN TO DYNAMIC WS-REPORT-PATH
+               ORGANIZATION IS SEQUENTIAL
+               ACCESS MODE IS SEQUENTIAL
+               FILE STATUS IS WS-REPORT-STATUS.
+
+           *> Structured log file
+           SELECT LOG-FILE ASSIGN TO DYNAMIC WS-LOG-PATH
+                ORGANIZATION IS LINE SEQUENTIAL
+                ACCESS MODE IS SEQUENTIAL
+                FILE STATUS IS WS-LOG-STATUS.
+
