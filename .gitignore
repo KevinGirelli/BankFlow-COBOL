@@ -1,0 +1,12 @@
+build/
+data/*.dat
+reports/*.txt
+reports/*.log
+logs/
+migrations/*.sqlite
+*.log
+*.lst
+*.cob
+*.int
+.DS_Store
+
