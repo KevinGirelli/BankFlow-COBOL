@@ -1,16 +1,12 @@
 # BankFlow COBOL – Design Overview
 
-## Purpose (English)
+## English
+
+### Purpose
 
 BankFlow COBOL demonstrates how a sequential-file banking workload can be organised in modern GnuCOBOL while remaining compatible with legacy environments.
 
-## Objetivo (Português)
-
-BankFlow COBOL demonstra como organizar um domínio bancário baseado em arquivos sequenciais em GnuCOBOL moderno, mantendo compatibilidade com ambientes legados.
-
----
-
-## Architecture (English)
+### Architecture
 
 - `src/app/BankFlow.cbl` – main program that copies each division.
 - `src/copybooks/`
@@ -32,31 +28,7 @@ BankFlow COBOL demonstra como organizar um domínio bancário baseado em arquivo
 - `reports/` – generated reports (`report.txt`).
 - `scripts/` – automation (build, run, reset, lint, tests, migrations).
 
-## Arquitetura (Português)
-
-- `src/app/BankFlow.cbl` – programa principal que inclui cada divisão.
-- `src/copybooks/`
-  - `file-control.cpy` – cláusulas `SELECT` com resolução dinâmica de caminhos.
-  - `file-section.cpy` – layouts FD/01 de cada arquivo físico.
-  - `working-storage.cpy` – constantes compartilhadas, status e tabelas em memória.
-- `src/sections/main-section.cpy` – orquestrador que reúne seções especializadas:
-  - `index-section.cpy` – caches em memória para clientes e contas.
-  - `logging-section.cpy` – rotinas de logging estruturado.
-  - `initialization-section.cpy` – descoberta de ambiente e preparação de arquivos.
-  - `menu-section.cpy` – laço interativo e roteamento de opções.
-  - `client-section.cpy` – cadastro e validação de clientes.
-  - `account-section.cpy` – ciclo de vida da conta, depósitos, saques e saldos.
-  - `report-section.cpy` – geração de relatórios e sumarização.
-  - `utility-section.cpy` – utilitários compartilhados (construtor de timestamp, gravação de transações).
-  - `finalize-section.cpy` – encerramento elegante e fechamento de logs.
-  - `entry-section.cpy` – conecta inicialização, menu e finalização.
-- `data/` – conjuntos sequenciais (`clients.dat`, `accounts.dat`, `transactions.dat`).
-- `reports/` – relatórios gerados (`report.txt`).
-- `scripts/` – automação (build, execução, limpeza, lint, testes, migrações).
-
----
-
-## Execution Flow (English)
+### Execution Flow
 
 ```
 BankFlow.cbl
@@ -82,7 +54,56 @@ BankFlow.cbl
    - Reports: stream transactions, render accounts, compute aggregated totals.
 4. **Utilities** – consistent timestamp formatting, structured logging, migration helpers.
 
-## Fluxo de Execução (Português)
+### Utilities & Reliability
+
+- `scripts/migrate_to_sqlite.py` / `migrate_from_sqlite.py` support round-tripping data between sequential files and SQLite.
+- The `migrations/` directory stores generated databases while avoiding binary noise in version control.
+- Structured logging and verbose mode aid troubleshooting in both interactive runs and automated tests.
+
+### Conventions
+
+- Free source format (`>>SOURCE FORMAT FREE`).
+- Section delimiters using `*> START ... / *> END ...`.
+- Paragraph names are uppercase verbs for readability.
+- User messages always accompany status information on errors.
+
+### Next Steps
+
+- Explore indexed files or lightweight relational storage using the existing migration tooling.
+- Add sequence diagrams for critical operations (e.g., withdrawal, report generation).
+- Capture additional observability signals (I/O timing, cache statistics).
+
+---
+
+## Português
+
+### Objetivo
+
+BankFlow COBOL demonstra como organizar um domínio bancário baseado em arquivos sequenciais em GnuCOBOL moderno, mantendo compatibilidade com ambientes legados.
+
+### Arquitetura
+
+- `src/app/BankFlow.cbl` – programa principal que inclui cada divisão.
+- `src/copybooks/`
+  - `file-control.cpy` – cláusulas `SELECT` com resolução dinâmica de caminhos.
+  - `file-section.cpy` – layouts FD/01 de cada arquivo físico.
+  - `working-storage.cpy` – constantes compartilhadas, status e tabelas em memória.
+- `src/sections/main-section.cpy` – orquestrador que reúne seções especializadas:
+  - `index-section.cpy` – caches em memória para clientes e contas.
+  - `logging-section.cpy` – rotinas de logging estruturado.
+  - `initialization-section.cpy` – descoberta de ambiente e preparação de arquivos.
+  - `menu-section.cpy` – laço interativo e roteamento de opções.
+  - `client-section.cpy` – cadastro e validação de clientes.
+  - `account-section.cpy` – ciclo de vida da conta, depósitos, saques e saldos.
+  - `report-section.cpy` – geração de relatórios e sumarização.
+  - `utility-section.cpy` – utilitários compartilhados (construtor de timestamp, gravação de transações).
+  - `finalize-section.cpy` – encerramento elegante e fechamento de logs.
+  - `entry-section.cpy` – conecta inicialização, menu e finalização.
+- `data/` – conjuntos sequenciais (`clients.dat`, `accounts.dat`, `transactions.dat`).
+- `reports/` – relatórios gerados (`report.txt`).
+- `scripts/` – automação (build, execução, limpeza, lint, testes, migrações).
+
+### Fluxo de Execução
 
 ```
 BankFlow.cbl
@@ -108,45 +129,20 @@ BankFlow.cbl
    - Relatórios: percorre transações, apresenta contas e calcula totais agregados.
 4. **Utilitários** – formatação consistente de timestamp, logging estruturado e auxiliares de migração.
 
----
-
-## Utilities & Reliability (English)
-
-- `scripts/migrate_to_sqlite.py` / `migrate_from_sqlite.py` support round-tripping data between sequential files and SQLite.
-- The `migrations/` directory stores generated databases while avoiding binary noise in version control.
-- Structured logging and verbose mode aid troubleshooting in both interactive runs and automated tests.
-
-## Utilitários & Confiabilidade (Português)
+### Utilitários & Confiabilidade
 
 - `scripts/migrate_to_sqlite.py` e `migrate_from_sqlite.py` permitem ida e volta entre arquivos sequenciais e SQLite.
 - O diretório `migrations/` armazena bancos gerados, evitando ruído binário no controle de versão.
 - Logs estruturados e modo verboso auxiliam na depuração em execuções interativas e testes automatizados.
 
----
-
-## Conventions (English)
-
-- Free source format (`>>SOURCE FORMAT FREE`).
-- Section delimiters using `*> START ... / *> END ...`.
-- Paragraph names are uppercase verbs for readability.
-- User messages always accompany status information on errors.
-
-## Convenções (Português)
+### Convenções
 
 - Formato livre de código (`>>SOURCE FORMAT FREE`).
 - Delimitadores de seção com `*> START ... / *> END ...`.
 - Nomes de parágrafos em maiúsculas com verbos descritivos.
 - Mensagens ao usuário sempre acompanham informações de status em casos de erro.
 
----
-
-## Next Steps (English)
-
-- Explore indexed files or lightweight relational storage using the existing migration tooling.
-- Add sequence diagrams for critical operations (e.g., withdrawal, report generation).
-- Capture additional observability signals (I/O timing, cache statistics).
-
-## Próximos Passos (Português)
+### Próximos Passos
 
 - Explorar arquivos indexados ou armazenamento relacional leve reutilizando as ferramentas de migração.
 - Adicionar diagramas de sequência para operações críticas (ex.: saque, geração de relatório).

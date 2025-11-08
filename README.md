@@ -1,16 +1,12 @@
 # BankFlow COBOL
 
-## Overview
+## English
+
+### Overview
 
 BankFlow COBOL is an educational current-account simulator that stores customers, accounts, and transactions in sequential files. The codebase illustrates maintainable COBOL practices, consistent validation, and a migration path toward indexed or relational storage.
 
-## Visão Geral
-
-BankFlow COBOL é um simulador didático de contas correntes que armazena clientes, contas e transações em arquivos sequenciais. O código demonstra práticas de COBOL sustentáveis, validações consistentes e um caminho de migração para arquivos indexados ou bancos relacionais.
-
----
-
-## Directory Structure
+### Directory Structure
 
 - `src/`
   - `app/BankFlow.cbl` – program entry point that copies each division.
@@ -25,24 +21,7 @@ BankFlow COBOL é um simulador didático de contas correntes que armazena client
 
 All paths default to these folders but can be overridden with environment variables.
 
-## Estrutura de Diretórios
-
-- `src/`
-  - `app/BankFlow.cbl` – ponto de entrada que inclui cada divisão.
-  - `copybooks/` – definições compartilhadas de arquivos e working-storage.
-  - `sections/` – seções reutilizáveis separadas por responsabilidade.
-- `data/` – arquivos sequenciais persistentes (`clients.dat`, `accounts.dat`, `transactions.dat`).
-- `reports/` – relatórios gerados (`report.txt`).
-- `build/` – saída da compilação (binário `bankflow` e objetos).
-- `scripts/` – utilitários de automação (`build.sh`, `run.sh`, `reset-data.sh`, `lint.sh`, `test.sh`, `migrate_to_sqlite.py`, `migrate_from_sqlite.py`).
-- `migrations/` – artefatos opcionais de exportação como `bankflow.sqlite`.
-- `docs/` – notas de design, changelog, estratégia de indexação e guias de componentes.
-
-Todos os caminhos usam esses diretórios por padrão, mas podem ser sobrescritos via variáveis de ambiente.
-
----
-
-## Current Features
+### Current Features
 
 - Customer registration with CPF validation and duplicate detection.
 - Account creation linked to existing customers with sequential numbering.
@@ -52,19 +31,7 @@ Todos os caminhos usam esses diretórios por padrão, mas podem ser sobrescritos
 - Structured event logging (`logs/events.log`) with optional verbose mode.
 - In-memory caches for customers and accounts to accelerate lookups.
 
-## Funcionalidades Atuais
-
-- Cadastro de clientes com validação de CPF e detecção de duplicidades.
-- Criação de contas vinculadas a clientes existentes com numeração sequencial.
-- Depósitos e saques com validações robustas e registro de transações.
-- Consulta de saldo com formatação legível.
-- Relatório de movimentações gravado em `reports/report.txt`, incluindo o saldo agregado do cliente.
-- Logs estruturados (`logs/events.log`) com modo verboso opcional.
-- Caches em memória de clientes e contas para acelerar buscas.
-
----
-
-## Usage
+### Usage
 
 ```bash
 # Build the executable into build/bankflow
@@ -99,7 +66,63 @@ Reset to a clean state:
 ./scripts/reset-data.sh
 ```
 
-## Uso
+### SQLite Migration
+
+Use the migration helpers to mirror sequential data in SQLite without leaving the COBOL workflow:
+
+```bash
+# Create migrations/bankflow.sqlite (drops previous content)
+./scripts/migrate_to_sqlite.py --reset
+
+# Rebuild .dat files into a temporary directory
+./scripts/migrate_from_sqlite.py --out-dir /tmp/bankflow-seq
+```
+
+- Both scripts honour `BANKFLOW_DATA_DIR` unless `--data-dir`/`--out-dir` is provided.
+- Monetary values are stored as integer cents (`amount_cents`) for precision.
+- `--overwrite` prevents accidental replacement unless explicitly requested.
+
+### Suggested Improvements
+
+- Extend operations (internal transfers, account closure) leveraging existing logging and indexing infrastructure.
+- Expand observability with performance metrics (I/O timing, table sizes).
+- Offer alternative front-ends (advanced TUI or REST facade).
+- Automate lab deployments (e.g., container with GnuCOBOL and SQLite preloaded).
+
+---
+
+## Português
+
+### Visão Geral
+
+BankFlow COBOL é um simulador didático de contas correntes que armazena clientes, contas e transações em arquivos sequenciais. O código demonstra práticas de COBOL sustentáveis, validações consistentes e um caminho de migração para arquivos indexados ou bancos relacionais.
+
+### Estrutura de Diretórios
+
+- `src/`
+  - `app/BankFlow.cbl` – ponto de entrada que inclui cada divisão.
+  - `copybooks/` – definições compartilhadas de arquivos e working-storage.
+  - `sections/` – seções reutilizáveis separadas por responsabilidade.
+- `data/` – arquivos sequenciais persistentes (`clients.dat`, `accounts.dat`, `transactions.dat`).
+- `reports/` – relatórios gerados (`report.txt`).
+- `build/` – saída da compilação (binário `bankflow` e objetos).
+- `scripts/` – utilitários de automação (`build.sh`, `run.sh`, `reset-data.sh`, `lint.sh`, `test.sh`, `migrate_to_sqlite.py`, `migrate_from_sqlite.py`).
+- `migrations/` – artefatos opcionais de exportação como `bankflow.sqlite`.
+- `docs/` – notas de design, changelog, estratégia de indexação e guias de componentes.
+
+Todos os caminhos usam esses diretórios por padrão, mas podem ser sobrescritos via variáveis de ambiente.
+
+### Funcionalidades Atuais
+
+- Cadastro de clientes com validação de CPF e detecção de duplicidades.
+- Criação de contas vinculadas a clientes existentes com numeração sequencial.
+- Depósitos e saques com validações robustas e registro de transações.
+- Consulta de saldo com formatação legível.
+- Relatório de movimentações gravado em `reports/report.txt`, incluindo o saldo agregado do cliente.
+- Logs estruturados (`logs/events.log`) com modo verboso opcional.
+- Caches em memória de clientes e contas para acelerar buscas.
+
+### Uso
 
 ```bash
 # Compilar o executável em build/bankflow
@@ -134,25 +157,7 @@ Restaurar o estado inicial:
 ./scripts/reset-data.sh
 ```
 
----
-
-## SQLite Migration
-
-Use the migration helpers to mirror sequential data in SQLite without leaving the COBOL workflow:
-
-```bash
-# Create migrations/bankflow.sqlite (drops previous content)
-./scripts/migrate_to_sqlite.py --reset
-
-# Rebuild .dat files into a temporary directory
-./scripts/migrate_from_sqlite.py --out-dir /tmp/bankflow-seq
-```
-
-- Both scripts honour `BANKFLOW_DATA_DIR` unless `--data-dir`/`--out-dir` is provided.
-- Monetary values are stored as integer cents (`amount_cents`) for precision.
-- `--overwrite` prevents accidental replacement unless explicitly requested.
-
-## Migração SQLite
+### Migração SQLite
 
 Utilize os utilitários de migração para espelhar os dados sequenciais em SQLite sem abandonar o fluxo COBOL:
 
@@ -168,16 +173,7 @@ Utilize os utilitários de migração para espelhar os dados sequenciais em SQLi
 - Valores monetários são armazenados como centavos inteiros (`amount_cents`) para manter a precisão.
 - `--overwrite` evita substituições acidentais, a menos que solicitadas explicitamente.
 
----
-
-## Suggested Improvements
-
-- Extend operations (internal transfers, account closure) leveraging existing logging and indexing infrastructure.
-- Expand observability with performance metrics (I/O timing, table sizes).
-- Offer alternative front-ends (advanced TUI or REST facade).
-- Automate lab deployments (e.g., container with GnuCOBOL and SQLite preloaded).
-
-## Evoluções Sugeridas
+### Evoluções Sugeridas
 
 - Ampliar as operações (transferências internas, encerramento de contas) reutilizando logs e índices existentes.
 - Expandir a observabilidade com métricas de desempenho (tempo de I/O, tamanho das tabelas).

@@ -1,6 +1,8 @@
 # Changelog
 
-## 2025-11-08 (English)
+## English
+
+### 2025-11-08
 
 - Major restructuring:
   - Main program consolidated in `src/app/BankFlow.cbl` with dedicated copybooks and sections.
@@ -32,7 +34,11 @@
   - `migrations/` tracked with `.gitkeep` and ignored binaries.
   - Detailed guidance in `docs/migration.md`.
 
-## 2025-11-08 (Português)
+---
+
+## Português
+
+### 2025-11-08
 
 - Reestruturação completa do projeto:
   - Programa principal consolidado em `src/app/BankFlow.cbl` com copybooks e sections dedicados.
