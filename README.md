@@ -184,3 +184,6 @@ Utilize os utilitários de migração para espelhar os dados sequenciais em SQLi
 - Oferecer camadas de apresentação alternativas (TUI avançada ou fachada REST).
 - Automatizar deploys para ambientes de laboratório (ex.: contêiner com GnuCOBOL e SQLite pré-carregado).
 
+
+
+
